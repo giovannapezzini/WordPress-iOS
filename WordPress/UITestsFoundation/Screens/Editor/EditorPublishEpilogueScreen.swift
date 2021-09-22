@@ -1,26 +1,42 @@
+import ScreenObject
 import XCTest
 
-public class EditorPublishEpilogueScreen: BaseScreen {
-    let doneButton: XCUIElement
-    let viewButton: XCUIElement
+public class EditorPublishEpilogueScreen: ScreenObject {
 
-    public init() {
-        let app = XCUIApplication()
-        let published = app.staticTexts["publishedPostStatusLabel"]
-        doneButton = app.navigationBars.buttons["doneButton"]
-        viewButton = app.buttons["viewPostButton"]
-
-        super.init(element: published)
+    private static let getDoneButton: (XCUIApplication) -> XCUIElement = {
+        $0.navigationBars.buttons["doneButton"]
     }
 
-    // returns void since return screen depends on what screen you started on
+    private static let getPublishedLabel: (XCUIApplication) -> XCUIElement = {
+        $0.staticTexts["publishedPostStatusLabel"]
+    }
+
+    private static let getViewButton: (XCUIApplication) -> XCUIElement = {
+        $0.buttons["viewPostButton"]
+    }
+
+    var doneButton: XCUIElement { Self.getDoneButton(app) }
+    var viewButton: XCUIElement { Self.getViewButton(app) }
+
+    public init(app: XCUIApplication = XCUIApplication()) throws {
+        try super.init(
+            expectedElementGetters: [
+                Self.getDoneButton,
+                Self.getPublishedLabel,
+                Self.getViewButton
+            ],
+            app: app
+        )
+    }
+
+    /// - Note: Returns `Void` since the return screen depends on which screen we started from.
     public func done() {
         doneButton.tap()
     }
 
     public func verifyEpilogueDisplays(postTitle expectedPostTitle: String, siteAddress expectedSiteAddress: String) -> EditorPublishEpilogueScreen {
-        let actualPostTitle = XCUIApplication().staticTexts["postTitle"].label
-        let actualSiteAddress = XCUIApplication().staticTexts["siteUrl"].label
+        let actualPostTitle = app.staticTexts["postTitle"].label
+        let actualSiteAddress = app.staticTexts["siteUrl"].label
 
         XCTAssertEqual(expectedPostTitle, actualPostTitle, "Post title doesn't match expected title")
         XCTAssertEqual(expectedSiteAddress, actualSiteAddress, "Site address doesn't match expected address")
